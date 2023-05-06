@@ -2,12 +2,12 @@ import pygame
 import bulletClass
 
 
-tank_T1_0 = r"..\image\tank_T1_0.png"
-tank_T1_1 = r"..\image\tank_T1_1.png"
-tank_T1_2 = r"..\image\tank_T1_2.png"
-tank_T2_0 = r"..\image\tank_T2_0.png"
-tank_T2_1 = r"..\image\tank_T2_1.png"
-tank_T2_2 = r"..\image\tank_T2_2.png"
+tank_T1_0 = r"./image/tank_T1_0.png"
+tank_T1_1 = r"./image/tank_T1_1.png"
+tank_T1_2 = r"./image/tank_T1_2.png"
+tank_T2_0 = r"./image/tank_T2_0.png"
+tank_T2_1 = r"./image/tank_T2_1.png"
+tank_T2_2 = r"./image/tank_T2_2.png"
 
        
 

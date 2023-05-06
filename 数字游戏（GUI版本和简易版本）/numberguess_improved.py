@@ -46,7 +46,7 @@ class MyMainWindow(QMainWindow, Ui_Form):
 
     def initUi(self):
         # 提示数值范围
-        self.label.setText('数值的范围是：{}-{}'.format(self.left, self.right))
+        self.label.setText('范围是：{}-{}'.format(self.left, self.right))
         # 按下按钮一，运行 self.guess 函数
         self.pushButton.clicked.connect(self.guess)
         # 按下按钮二，运行 quit 函数

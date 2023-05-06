@@ -7,7 +7,14 @@ import wall
 import myTank
 import enemyTank
 import food
-    
+ENEMY_CLUSTER = 10
+PLAYER_LIFE = 1
+DELAY_TIME = 2000
+ENEMY_NUMBER = 4
+def test():
+    file = open("image/windy.txt", "w")
+    file.write("hello world")
+    file.close()
 
 def main():
     pygame.init()
@@ -16,17 +23,21 @@ def main():
     resolution = 630, 630
     screen = pygame.display.set_mode(resolution)
     pygame.display.set_caption("Tank War ")
+    #test()
     
     # 加载图片,音乐,音效.
-    background_image     = pygame.image.load(r"..\image\background.png")
-    home_image           = pygame.image.load(r"..\image\home.png")
-    home_destroyed_image = pygame.image.load(r"..\image\home_destroyed.png")
+    gameover_image = pygame.image.load(r"image/GameOver.png")
+    gamewin_image = pygame.image.load(r"image/GameWin.png")
+    background_image     = pygame.image.load(r"image/background.png")
+    home_image           = pygame.image.load(r"./image/home.png")
+    home_destroyed_image = pygame.image.load(r"./image/home_destroyed.png")
     
-    bang_sound          = pygame.mixer.Sound(r"..\music\bang.wav")
+    bang_sound          = pygame.mixer.Sound(r"./music/bang.wav")
     bang_sound.set_volume(1)
-    fire_sound           = pygame.mixer.Sound(r"..\music\Gunfire.wav")
-    start_sound          = pygame.mixer.Sound(r"..\music\start.wav")
-    start_sound.play()
+    fire_sound           = pygame.mixer.Sound(r"./music/Gunfire.wav")
+    start_sound          = pygame.mixer.Sound(r"./music/start.wav")
+    #start_sound.play()
+    home = wall.Home()
     
     # 定义精灵组:坦克，我方坦克，敌方坦克，敌方子弹
     allTankGroup     = pygame.sprite.Group()
@@ -38,7 +49,7 @@ def main():
     enemyBulletGroup = pygame.sprite.Group()
     # 创建地图 
     bgMap = wall.Map()
-    # 创建食物/道具 但不显示
+    # 创建食物/道具 但不显示aaaaaaaa
     prop = food.Food()
     # 创建我方坦克
     myTank_T1 = myTank.MyTank(1)
@@ -47,6 +58,8 @@ def main():
     myTank_T2 = myTank.MyTank(2)
     allTankGroup.add(myTank_T2)
     mytankGroup.add(myTank_T2)
+    myTank_T1.life = PLAYER_LIFE
+    myTank_T2.life = PLAYER_LIFE
     # 创建敌方 坦克
     for i in range(1, 4):
             enemy = enemyTank.EnemyTank(i)
@@ -60,7 +73,7 @@ def main():
                 continue
             otherEnemyGroup.add(enemy)
     # 敌军坦克出现动画
-    appearance_image = pygame.image.load(r"..\image\appear.png").convert_alpha()
+    appearance_image = pygame.image.load(r"./image/appear.png").convert_alpha()
     appearance = []
     appearance.append(appearance_image.subsurface(( 0, 0), (48, 48)))
     appearance.append(appearance_image.subsurface((48, 0), (48, 48)))
@@ -72,7 +85,7 @@ def main():
     # 自定义事件
     # 创建敌方坦克延迟200
     DELAYEVENT = pygame.constants.USEREVENT
-    pygame.time.set_timer(DELAYEVENT, 200)
+    pygame.time.set_timer(DELAYEVENT, DELAY_TIME)
     # 创建 敌方 子弹延迟1000
     ENEMYBULLETNOTCOOLINGEVENT = pygame.constants.USEREVENT + 1
     pygame.time.set_timer(ENEMYBULLETNOTCOOLINGEVENT, 1000)
@@ -84,17 +97,19 @@ def main():
     pygame.time.set_timer(NOTMOVEEVENT, 8000)
     
     
-    delay = 100
+    delay = 1000
     moving = 0
     movdir = 0
     moving2 = 0
     movdir2 = 0
-    enemyNumber = 3
+    enemyNumber = ENEMY_NUMBER
     enemyCouldMove      = True
     switch_R1_R2_image  = True
     homeSurvive         = True
+    homeDestroyed       = False
     running_T1          = True
     running_T2          = True
+    gameover            = False
     clock = pygame.time.Clock()
     while True:
         for event in pygame.event.get():
@@ -114,10 +129,11 @@ def main():
             # 敌方坦克静止事件
             if event.type == NOTMOVEEVENT:
                 enemyCouldMove = True
-            
-            # 创建敌方坦克延迟
+
+            # 创建敌方坦克延迟j
             if event.type == DELAYEVENT:
-                if enemyNumber < 4:
+                #print("windy")
+                if enemyNumber <= ENEMY_CLUSTER:
                     enemy = enemyTank.EnemyTank()
                     if pygame.sprite.spritecollide(enemy, allTankGroup, False, None):
                         break
@@ -140,6 +156,12 @@ def main():
                     myTank_T1.levelUp()
                 if event.key == pygame.K_q:
                     myTank_T1.levelDown()
+                if event.key == pygame.K_r:
+                    #print("windy")
+                    main()
+                    # gameover = False
+                    # enemyNumber = ENEMY_NUMBER
+                    # myTank_T1.life = PLAYER_LIFE
                 if event.key == pygame.K_3:
                     myTank_T1.levelUp()
                     myTank_T1.levelUp()
@@ -158,7 +180,21 @@ def main():
                     for x, y in [(11,23),(12,23),(13,23),(14,23),(11,24),(14,24),(11,25),(14,25)]:
                         bgMap.iron = wall.Iron()
                         bgMap.iron.rect.left, bgMap.iron.rect.top = 3 + x * 24, 3 + y * 24
-                        bgMap.ironGroup.add(bgMap.iron)                
+                        bgMap.ironGroup.add(bgMap.iron)
+
+        # print(enemyNumber - 1)
+        if myTank_T1.life < 1 or homeDestroyed:
+            gameover = True
+            screen.blit(background_image, (0, 0))
+            screen.blit(gameover_image, (0, 0))
+            pygame.display.flip()
+        if enemyNumber <= 1:
+            gameover = True
+            screen.blit(background_image, (0, 0))
+            screen.blit(gamewin_image, (0,0))
+            pygame.display.flip()
+        if gameover:
+            continue
                 
 
 
@@ -227,7 +263,7 @@ def main():
                 allTankGroup.add(myTank_T1)
         if key_pressed[pygame.K_j]:
             if not myTank_T1.bullet.life and myTank_T1.bulletNotCooling:
-                fire_sound.play()
+                #fire_sound.play()
                 myTank_T1.shoot()
                 myTank_T1.bulletNotCooling = False
                 
@@ -367,6 +403,10 @@ def main():
             myTank_T1.bullet.move()    
             screen.blit(myTank_T1.bullet.bullet, myTank_T1.bullet.rect)
             # 子弹 碰撞 子弹
+            if pygame.sprite.collide_rect(myTank_T1.bullet, home):
+                #print("windy")
+                homeDestroyed = True
+                continue
             for each in enemyBulletGroup:
                 if each.life:
                     if pygame.sprite.collide_rect(myTank_T1.bullet, each):
@@ -376,7 +416,7 @@ def main():
             # 子弹 碰撞 敌方坦克
             if pygame.sprite.spritecollide(myTank_T1.bullet, redEnemyGroup, True, None):
                 prop.change()
-                bang_sound.play()
+                #bang_sound.play()
                 enemyNumber -= 1
                 myTank_T1.bullet.life = False
             elif pygame.sprite.spritecollide(myTank_T1.bullet,greenEnemyGroup, False, None):
@@ -384,7 +424,7 @@ def main():
                     if pygame.sprite.collide_rect(myTank_T1.bullet, each):
                         if each.life == 1:
                             pygame.sprite.spritecollide(myTank_T1.bullet,greenEnemyGroup, True, None)
-                            bang_sound.play()
+                            #bang_sound.play()
                             enemyNumber -= 1
                         elif each.life == 2:
                             each.life -= 1
@@ -394,7 +434,7 @@ def main():
                             each.tank = each.enemy_3_2
                 myTank_T1.bullet.life = False
             elif pygame.sprite.spritecollide(myTank_T1.bullet, otherEnemyGroup, True, None):
-                bang_sound.play()
+                #bang_sound.play()
                 enemyNumber -= 1
                 myTank_T1.bullet.life = False    
             #if pygame.sprite.spritecollide(myTank_T1.bullet, allEnemyGroup, True, None):
@@ -421,7 +461,7 @@ def main():
             screen.blit(myTank_T2.bullet.bullet, myTank_T2.bullet.rect)
             # 子弹 碰撞 敌方坦克
             if pygame.sprite.spritecollide(myTank_T2.bullet, allEnemyGroup, True, None):
-                bang_sound.play()
+                #bang_sound.play()
                 enemyNumber -= 1
                 myTank_T2.bullet.life = False
             # 子弹 碰撞 brickGroup
@@ -455,15 +495,20 @@ def main():
                         each.bullet.move()
                     screen.blit(each.bullet.bullet, each.bullet.rect)
                     # 子弹 碰撞 我方坦克
+                    if pygame.sprite.collide_rect(each.bullet, home):
+                        homeDestroyed = True
+                        continue
                     if pygame.sprite.collide_rect(each.bullet, myTank_T1):
-                        bang_sound.play()
+                        myTank_T1.life -= 1
+                        #bang_sound.play()
                         myTank_T1.rect.left, myTank_T1.rect.top = 3 + 8 * 24, 3 + 24 * 24 
                         each.bullet.life = False
                         moving = 0  # 重置移动控制参数
                         for i in range(myTank_T1.level+1):
                             myTank_T1.levelDown()
                     if pygame.sprite.collide_rect(each.bullet, myTank_T2):
-                        bang_sound.play()
+                        myTank_T2.life -= 1
+                        #bang_sound.play()
                         myTank_T2.rect.left, myTank_T2.rect.top = 3 + 16 * 24, 3 + 24 * 24 
                         each.bullet.life = False
                     # 子弹 碰撞 brickGroup
@@ -485,7 +530,7 @@ def main():
                 if prop.kind == 1:  # 敌人全毁
                     for each in allEnemyGroup:
                         if pygame.sprite.spritecollide(each, allEnemyGroup, True, None):
-                            bang_sound.play()
+                            #bang_sound.play()
                             enemyNumber -= 1
                     prop.life = False
                 if prop.kind == 2:  # 敌人静止
@@ -507,7 +552,7 @@ def main():
                     myTank_T1.levelUp()
                     prop.life = False
                 if prop.kind == 7:  # 坦克生命+1
-                    myTank_T1.life += 1
+                    myTank_T1.life += 0
                     prop.life = False
                     
             
@@ -519,15 +564,21 @@ def main():
             delay = 100    
         
         pygame.display.flip()
+
+
+            # pygame.display.flip()
+            # input("QUIT: ")aaa
+            # pygame.quit()
         clock.tick(60)
     
     
 if __name__ == "__main__":
-    try:
-        main()
-    except SystemExit:
-        pass
-    except:
-        traceback.print_exc()
-        pygame.quit()
-        input()
+    main()
+    # try:
+    #     main()V
+    # except SystemExit:
+    #     pass
+    # except:
+    #     traceback.print_exc()
+    #     pygame.quit()
+    #     input()

@@ -1,7 +1,17 @@
 import pygame
 
-brickImage          = r"..\image\brick.png"
-ironImage           = r"..\image\iron.png"
+brickImage          = r"./image/brick.png"
+ironImage           = r"./image/iron.png"
+homeImage           = r"./image/home.png"
+
+class Home(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.image = pygame.image.load(homeImage)
+        self.rect = self.image.get_rect()
+        self.rect.left = 3 + 12 * 24
+        self.rect.top = 3 + 24 * 24
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self):
